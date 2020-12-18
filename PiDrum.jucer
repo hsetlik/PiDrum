@@ -54,5 +54,6 @@
   </MODULES>
   <LIVE_SETTINGS>
     <LINUX/>
+    <OSX/>
   </LIVE_SETTINGS>
 </JUCERPROJECT>
