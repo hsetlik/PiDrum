@@ -5,6 +5,15 @@
               pluginCharacteristicsValue="pluginWantsMidiIn">
   <MAINGROUP id="O5tNYt" name="PiDrum">
     <GROUP id="{0C384316-12F0-B482-2784-0DAB29F00C00}" name="Source">
+      <FILE id="phzhWW" name="Sequencer.cpp" compile="1" resource="0" file="Source/Sequencer.cpp"/>
+      <FILE id="XrQLK4" name="Sequencer.h" compile="0" resource="0" file="Source/Sequencer.h"/>
+      <FILE id="rCRHUb" name="ArrangerPanel.cpp" compile="1" resource="0"
+            file="Source/ArrangerPanel.cpp"/>
+      <FILE id="tAUSo5" name="ArrangerPanel.h" compile="0" resource="0" file="Source/ArrangerPanel.h"/>
+      <FILE id="nNkFEM" name="SequencerPanel.cpp" compile="1" resource="0"
+            file="Source/SequencerPanel.cpp"/>
+      <FILE id="KseFaC" name="SequencerPanel.h" compile="0" resource="0"
+            file="Source/SequencerPanel.h"/>
       <FILE id="XOovrq" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="a4ol9M" name="PluginProcessor.h" compile="0" resource="0"
