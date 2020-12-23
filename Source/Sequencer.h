@@ -24,7 +24,7 @@ enum analogVoice
 
 struct Step
 {
-    Step(int thisIndex, int thisLength) : length(thisLength), index(thisIndex), active(false)
+    Step(int thisIndex, int thisLength) : length(thisLength), stepIndex(thisIndex), active(false)
     {
     }
     void toggle()
@@ -38,15 +38,15 @@ struct Step
         }
     }
     int length;
-    int index;
+    int stepIndex;
     bool active;
 };
 
 class Track
 {
 public:
-    Track(int length);
-    Track(int length, analogVoice voice);
+    Track(int length, int index);
+    Track(int length, int index, analogVoice voice);
     ~Track();
     void makeTuplet(int stepIndex, int numDivisions);
     analogVoice getAnalogVoice()
@@ -55,6 +55,7 @@ public:
     }
     bool isAnalog;
 private:
+    int trackIndex;
     analogVoice drumVoice;
     juce::OwnedArray<Step> steps;
 };
@@ -69,6 +70,6 @@ public:
     ~Sequence() {}
 private:
     int resolution; //how long a default note is as a fraction (i.e. '4' indicates quarter notes, '8' for eigth notes etc)
-    int length; //number of steps of the default length in the sequence
+    int length; //number of steps in the sequence
     juce::OwnedArray<Track> tracks;
 };
