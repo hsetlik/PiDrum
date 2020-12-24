@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "SequencerPanel.h"
 
 //==============================================================================
 /**
@@ -25,6 +26,7 @@ public:
     void resized() override;
 
 private:
+    SequencerPanel sequencer;
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     PiDrumAudioProcessor& audioProcessor;

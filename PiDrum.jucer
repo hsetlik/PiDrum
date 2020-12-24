@@ -2,9 +2,10 @@
 
 <JUCERPROJECT id="dlMZBT" name="PiDrum" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              pluginCharacteristicsValue="pluginWantsMidiIn">
+              pluginCharacteristicsValue="pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn">
   <MAINGROUP id="O5tNYt" name="PiDrum">
     <GROUP id="{0C384316-12F0-B482-2784-0DAB29F00C00}" name="Source">
+      <FILE id="Xf6ilm" name="RGBColor.h" compile="0" resource="0" file="Source/RGBColor.h"/>
       <FILE id="phzhWW" name="Sequencer.cpp" compile="1" resource="0" file="Source/Sequencer.cpp"/>
       <FILE id="XrQLK4" name="Sequencer.h" compile="0" resource="0" file="Source/Sequencer.h"/>
       <FILE id="rCRHUb" name="ArrangerPanel.cpp" compile="1" resource="0"

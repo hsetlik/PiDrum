@@ -24,8 +24,16 @@ enum analogVoice
 
 struct Step
 {
-    Step(int thisIndex, int thisLength) : length(thisLength), stepIndex(thisIndex), active(false)
+    Step(int thisIndex, float thisLength) : noteLength(thisLength), stepIndex(thisIndex), active(false)
     {
+       if(thisLength < 1.0f)
+       {
+           isTuplet = true;
+       }
+        else
+        {
+            isTuplet = false;
+        }
     }
     void toggle()
     {
@@ -37,7 +45,8 @@ struct Step
             active = true;
         }
     }
-    int length;
+    bool isTuplet;
+    float noteLength; //fraction of a sequence's default note size
     int stepIndex;
     bool active;
 };
@@ -45,31 +54,25 @@ struct Step
 class Track
 {
 public:
-    Track(int length, int index);
-    Track(int length, int index, analogVoice voice);
-    ~Track();
+    Track(int length, int index) : trackIndex(index)
+    {
+        
+    }
+    Track(int length, int index, analogVoice voice) : isAnalog(true), trackIndex(index), drumVoice(voice)
+    {
+    }
+    ~Track()
+    {
+        
+    }
     void makeTuplet(int stepIndex, int numDivisions);
     analogVoice getAnalogVoice()
     {
         return drumVoice;
     }
     bool isAnalog;
+    std::vector<Step*> steps;
 private:
     int trackIndex;
     analogVoice drumVoice;
-    juce::OwnedArray<Step> steps;
-};
-
-class Sequence
-{
-public:
-    Sequence(int startRes = 4, int startLength = 16) : resolution(startRes), length(startLength)
-    {
-    }
-    Sequence(int numDigitalTracks, int startRes = 4, int startLength = 16); //all analog tracks are created by default, work out digital track stuff later
-    ~Sequence() {}
-private:
-    int resolution; //how long a default note is as a fraction (i.e. '4' indicates quarter notes, '8' for eigth notes etc)
-    int length; //number of steps in the sequence
-    juce::OwnedArray<Track> tracks;
 };
