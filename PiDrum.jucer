@@ -22,6 +22,22 @@
       <FILE id="EILbTf" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="DyXDx4" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <GROUP id="{185DE77C-AB93-2691-1886-14BA60FF03B9}" name="Images">
+        <FILE id="UihQZg" name="clap@0.5x.png" compile="0" resource="1" file="GUIAssets/0.5x/clap@0.5x.png"
+              xcodeResource="1"/>
+        <FILE id="t1ukBx" name="clave@0.5x.png" compile="0" resource="1" file="GUIAssets/0.5x/clave@0.5x.png"
+              xcodeResource="1"/>
+        <FILE id="hHC6oq" name="closedHat@0.5x.png" compile="0" resource="1"
+              file="GUIAssets/0.5x/closedHat@0.5x.png" xcodeResource="1"/>
+        <FILE id="wF5tnD" name="kick1@0.5x.png" compile="0" resource="1" file="GUIAssets/0.5x/kick1@0.5x.png"
+              xcodeResource="1"/>
+        <FILE id="f402t6" name="kick2@0.5x.png" compile="0" resource="1" file="GUIAssets/0.5x/kick2@0.5x.png"
+              xcodeResource="1"/>
+        <FILE id="sgGdzJ" name="openHat@0.5x.png" compile="0" resource="1"
+              file="GUIAssets/0.5x/openHat@0.5x.png" xcodeResource="1"/>
+        <FILE id="Zym6nk" name="snare@0.5x.png" compile="0" resource="1" file="GUIAssets/0.5x/snare@0.5x.png"
+              xcodeResource="1"/>
+      </GROUP>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>

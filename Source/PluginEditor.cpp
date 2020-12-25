@@ -11,7 +11,7 @@
 
 //==============================================================================
 PiDrumAudioProcessorEditor::PiDrumAudioProcessorEditor (PiDrumAudioProcessor& p)
-    : AudioProcessorEditor (&p), sequencer(5, 16), audioProcessor (p)
+    : AudioProcessorEditor (&p), sequencer(0, 16), audioProcessor (p)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
