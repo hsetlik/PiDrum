@@ -22,9 +22,10 @@ enum analogVoice
     clave
 };
 
-struct Step
+class Step
 {
-    Step(int thisIndex, float thisLength) : noteLength(thisLength), stepIndex(thisIndex), active(false)
+public:
+    Step(int thisIndex, float thisLength) : noteLength(thisLength), stepIndex(thisIndex), active(false), current(false)
     {
        if(thisLength < 1.0f)
        {
@@ -45,10 +46,20 @@ struct Step
             active = true;
         }
     }
+    void toggleCurrent()
+    {
+        if(current)
+        { current = false;}
+        else
+        {current = true;}
+    }
+    bool isCurrent() {return current;}
     bool isTuplet;
     float noteLength; //fraction of a sequence's default note size
     int stepIndex;
     bool active;
+private:
+    bool current;
 };
 
 class Track

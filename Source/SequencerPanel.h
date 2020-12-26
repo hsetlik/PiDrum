@@ -20,21 +20,29 @@
 class NoteButton : public juce::ShapeButton
 {
 public:
-    NoteButton(int thisIndex, float thisLength, juce::Colour setOnColor, juce::Colour setOffColor) :
-    juce::ShapeButton("noteButton", setOnColor, setOffColor, setOffColor),
+    NoteButton(int thisIndex, float thisLength, juce::Colour setOnColor, juce::Colour setOffColor, juce::Colour setCurrentColor) :
+    juce::ShapeButton("noteButton", juce::Colours::black, juce::Colours::black, juce::Colours::black),
     onColor(setOnColor),
     offColor(setOffColor),
+    currentColor(setCurrentColor),
     seqStep(thisIndex, thisLength)
     {
+        setWantsKeyboardFocus(false);
         edgeColor = juce::Colours::lightgrey;
         setClickingTogglesState(true);
     }
     ~NoteButton() {}
+    void setOnColor(juce::Colour newColor)
+    {
+        onColor = newColor;
+    }
     void paintButton(juce::Graphics& g, bool mouseOver, bool mouseDown) override
     {
         if(seqStep.active)
         {
             g.setColour(onColor);
+        } else if(seqStep.isCurrent()) {
+            g.setColour(currentColor);
         } else {
             g.setColour(offColor);
         }
@@ -51,6 +59,7 @@ private:
     juce::Colour edgeColor;
     juce::Colour onColor;
     juce::Colour offColor;
+    juce::Colour currentColor;
     Step seqStep;
 };
 
@@ -61,6 +70,7 @@ class TrackLabelComponent : public juce::Component
 public:
     TrackLabelComponent(analogVoice type) : voiceType(type)
     {
+        setWantsKeyboardFocus(false);
         bkgnd = color.RGBColor(70, 69, 75);
         switch(type)
         {
@@ -141,16 +151,18 @@ class TrackComponent : public juce::Component
 public:
     TrackComponent(int length, int index) : trackLabel(kick1), track(length, index)
     {
+        setWantsKeyboardFocus(false);
         stepOn = color.RGBColor(190, 1, 49);
         stepOff = color.RGBColor(126, 0, 33);
         stepCurrent = color.RGBColor(254, 0, 66);
         for(int i = 0; i < length; ++i)
         {
-            stepButtons.add(new NoteButton(i, 1.0f, stepOn, stepOff));
+            stepButtons.add(new NoteButton(i, 1.0f, stepOn, stepOff, stepCurrent));
             NoteButton* newestStep = stepButtons.getLast();
             addAndMakeVisible(newestStep);
             track.steps.push_back(newestStep->getStep());
         }
+        setCurrentStep(0);
     }
     TrackComponent(int length, int index, analogVoice drum) : trackLabel(drum), drumVoice(drum), track(length, index)
     {
@@ -160,7 +172,7 @@ public:
         addAndMakeVisible(trackLabel);
         for(int i = 0; i < length; ++i)
         {
-            stepButtons.add(new NoteButton(i, 1.0f, stepOn, stepOff));
+            stepButtons.add(new NoteButton(i, 1.0f, stepOn, stepOff, stepCurrent));
             NoteButton* newestStep = stepButtons.getLast();
             addAndMakeVisible(newestStep);
             track.steps.push_back(newestStep->getStep());
@@ -176,6 +188,9 @@ public:
     }
     void setCurrentStep(int indexOfTotalSteps)
     {
+        currentStep->toggleCurrent();
+        currentStep = stepButtons.getUnchecked(indexOfTotalSteps)->getStep();
+        currentStep->toggleCurrent();
     }
     void resized() override
     {
@@ -185,6 +200,19 @@ public:
         for(int i = 0; i < sequenceLength; ++i)
         {
             stepButtons.getUnchecked(i)->setBounds((i * buttonWidth) + LABELWIDTH, 0, buttonWidth, getHeight());
+        }
+    }
+    void paint(juce::Graphics& g) override
+    {
+        for(int i = 0; i < stepButtons.size(); ++i)
+        {
+            Step* toCheck = stepButtons.getUnchecked(i)->getStep();
+            if(toCheck == currentStep)
+            {
+                stepButtons.getUnchecked(i)->setOnColor(stepCurrent);
+            } else {
+                stepButtons.getUnchecked(i)->setOnColor(stepOn);
+            }
         }
     }
 private:
@@ -199,11 +227,15 @@ private:
     Track track;
 };
 
-class SequencerPanel  : public juce::Component, juce::Button::Listener
+class SequencerPanel  : public juce::Component, juce::Button::Listener, juce::HighResolutionTimer
 {
 public:
-    SequencerPanel(int numDigitalTracks, int length) : sequenceLength(length)
+    SequencerPanel(int numDigitalTracks, int length) : currentStepIndex(0), currentTempo(120), sequenceLength(length)
     {
+        setAlwaysOnTop(true);
+        playheadColor = color.RGBColor(255, 149, 0);
+        setWantsKeyboardFocus(true);
+        isPlaying = false;
         trackComponents.add(new TrackComponent(length, 0, kick1));
         trackComponents.add(new TrackComponent(length, 1, kick2));
         trackComponents.add(new TrackComponent(length, 2, openHat));
@@ -220,19 +252,66 @@ public:
                 currentStepButton->addListener(this);
             }
         }
+        int msInterval = (60 / currentTempo) * 1000;
+        startTimer(msInterval);
+        juce::Timer::callAfterDelay (100, [&]
+        {
+            grabKeyboardFocus();
+        });
     }
     ~SequencerPanel()
     {
         
+    }
+    void incrementStep()
+    {
+        if(currentStepIndex < (sequenceLength - 1))
+        {
+            ++currentStepIndex;
+        } else  {
+            currentStepIndex = 0;
+        }
+        int numTracks = trackComponents.size();
+        for(int i = 0; i < numTracks; ++i)
+        {
+            trackComponents.getUnchecked(i)->setCurrentStep(currentStepIndex);
+        }
+    }
+    void hiResTimerCallback() override
+    {
+      if(isPlaying)
+      {
+          //advance the current step on each track
+          incrementStep();
+      }
+    }
+    void togglePlay()
+    {
+        if(isPlaying) {isPlaying = false;}
+        else {isPlaying = true;}
+    }
+    bool keyPressed(const juce::KeyPress &k) override
+    {
+        if(k.getTextCharacter() == 'p')
+        {
+            togglePlay();
+        }
+        return false;
     }
     void buttonClicked(juce::Button* button) override
     {
         NoteButton* note = dynamic_cast<NoteButton*>(button);
         note->getStep()->toggle();
     }
-    void paint (juce::Graphics&) override
+    void paint (juce::Graphics& g) override
     {
-        
+        auto sequenceWidth = getWidth() - LABELWIDTH;
+        auto sequenceHeight = getHeight();
+        auto stepWidth = sequenceWidth / sequenceLength;
+        auto stepX = LABELWIDTH + (currentStepIndex * stepWidth);
+        juce::Rectangle<int> playhead {stepX, 0, stepWidth, sequenceHeight};
+        g.setColour(playheadColor);
+        g.drawRect(playhead);
     }
     void resized() override
     {
@@ -245,6 +324,11 @@ public:
     }
 
 private:
+    ColorCreator color;
+    juce::Colour playheadColor;
+    int currentStepIndex;
+    int currentTempo;
+    bool isPlaying;
     int sequenceLength;
     juce::OwnedArray<TrackComponent> trackComponents;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequencerPanel)
