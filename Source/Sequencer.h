@@ -10,7 +10,7 @@
 
 #pragma once
 #include <JuceHeader.h>
-
+#include "RGBColor.h"
 enum analogVoice
 {
     kick1,
@@ -22,68 +22,20 @@ enum analogVoice
     clave
 };
 
-class Step
+class Step : public juce::ShapeButton
 {
 public:
-    Step(int thisIndex, float thisLength) : noteLength(thisLength), stepIndex(thisIndex), active(false), current(false)
-    {
-       if(thisLength < 1.0f)
-       {
-           isTuplet = true;
-       }
-        else
-        {
-            isTuplet = false;
-        }
-    }
-    void toggle()
-    {
-        if(active)
-        {
-            active = false;
-        } else
-        {
-            active = true;
-        }
-    }
-    void toggleCurrent()
-    {
-        if(current)
-        { current = false;}
-        else
-        {current = true;}
-    }
-    bool isCurrent() {return current;}
-    bool isTuplet;
-    float noteLength; //fraction of a sequence's default note size
-    int stepIndex;
-    bool active;
+    Step(int length, int maxSub, int index);
+    ~Step();
+    void paintButton(juce::Graphics& g, bool mouseIsOver, bool mouseIsDown) override;
 private:
-    bool current;
-};
-
-class Track
-{
-public:
-    Track(int length, int index) : trackIndex(index)
-    {
-        
-    }
-    Track(int length, int index, analogVoice voice) : isAnalog(true), trackIndex(index), drumVoice(voice)
-    {
-    }
-    ~Track()
-    {
-        
-    }
-    void makeTuplet(int stepIndex, int numDivisions);
-    analogVoice getAnalogVoice()
-    {
-        return drumVoice;
-    }
-    bool isAnalog;
-    std::vector<Step*> steps;
-private:
-    int trackIndex;
-    analogVoice drumVoice;
+    bool isNote;
+    int maxSubdivision; // maximum number of times a full note length can be divided
+    int factor; //share of a quarter note which this step occupies
+    int indexInSequence; //index of this step in the sequence (measured in units of maxSubdivision);
+    ColorCreator color;
+    juce::Colour noteColorOff;
+    juce::Colour noteColorOn;
+    juce::Colour restColorOff;
+    juce::Colour restColorOn;
 };
