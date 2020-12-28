@@ -19,5 +19,25 @@
 */
 
 
+class SequencerPanel : public juce::Component, juce::Timer
+{
+public:
+    SequencerPanel(int length, int maxSub, int tempo) : seq(length, maxSub, tempo)
+    {
+        addAndMakeVisible(seq);
+        startTimer(50);
+    }
+    ~SequencerPanel() {}
+    void resized() override
+    {
+        seq.setBounds(getBounds());
+    }
+    void timerCallback() override
+    {
+        seq.repaint();
+    }
+private:
+    Sequence seq;
+};
 
 

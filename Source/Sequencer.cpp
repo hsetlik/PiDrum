@@ -158,7 +158,7 @@ Sequence::Sequence(int length, int maxSubDivs, int temp) : maxSubdivisions(maxSu
     }
     maxDivIndex = 0;
     isPlaying = false;
-    auto msPerBeat = (1000 * tempo) / 3600;
+    auto msPerBeat = (1 / (tempo / 60.0f)) * 1000.0f;
     auto msPerDiv = msPerBeat / maxSubdivisions;
     startTimer(msPerDiv);
 }
