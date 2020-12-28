@@ -1,2 +1,4 @@
 /Builds/MacOSX
-/JuceLibraryCode
+/JuceLibraryCode/*
+!JuceLibraryCode/BinaryData.h
+!JuceLibraryCode/BinaryData.cpp
