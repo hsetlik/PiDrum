@@ -200,6 +200,10 @@ public:
     void resized() override;
     void paint(juce::Graphics& g) override;
     bool keyPressed(const juce::KeyPress &p) override;
+    int getTempo()
+    {
+        return tempo;
+    }
 private:
     ColorCreator color;
     int maxDivIndex;

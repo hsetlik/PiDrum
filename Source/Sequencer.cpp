@@ -167,7 +167,7 @@ void Sequence::setTempo(int newTempo)
 {
     tempo = newTempo;
     stopTimer();
-    auto msPerBeat = (1000 * tempo) / 3600;
+    auto msPerBeat = (1 / (tempo / 60.0f)) * 1000.0f;
     auto msPerDiv = msPerBeat / maxSubdivisions;
     startTimer(msPerDiv);
 }
@@ -220,6 +220,16 @@ bool Sequence::keyPressed(const juce::KeyPress &p)
         case 'p':
         {
             togglePlay();
+            break;
+        }
+        case 'f':
+        {
+            setTempo(tempo + 1);
+            break;
+        }
+        case 's':
+        {
+            setTempo(tempo - 1);
             break;
         }
         default:
