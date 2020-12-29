@@ -10,7 +10,7 @@
 
 #include "Sequencer.h"
 
-Step::Step(int length, int maxSub, int index) : juce::ShapeButton("stepButton", restColorOff, restColorOff, noteColorOff),
+Step::Step(int length, int maxSub, int index) : juce::ShapeButton("stepButton", restColorOff, restColorOff, noteColorOff), isSelected(false),
 maxSubdivision(maxSub), factor(length), indexInSequence(index)
 {
     state = restOff;
@@ -50,10 +50,16 @@ void Step::paintButton(juce::Graphics &g, bool mouseIsOver, bool mouseIsDown)
     }
     g.fillRect(getLocalBounds());
     auto border = getLocalBounds();
-    g.setColour(juce::Colours::black);
+    if(isSelected)
+    {
+        g.setColour(juce::Colours::white);
+    }
+    else
+    {
+        g.setColour(juce::Colours::black);
+    }
     g.drawRect(border);
 }
-
 Track::Track(int length, int minimumSubDiv, analogVoice type) :  label(type), sequenceLength(length), maxSubdivision(minimumSubDiv), drumVoice(type)
 {
     for(int i = 0; i < sequenceLength; ++i)
@@ -61,10 +67,14 @@ Track::Track(int length, int minimumSubDiv, analogVoice type) :  label(type), se
         steps.add(new Step(1, maxSubdivision, i));
         addAndMakeVisible(steps.getLast());
         steps.getLast()->addListener(this);
+        steps.getLast()->addMouseListener(this, true);
     }
-    addAndMakeVisible(label);
+    //addAndMakeVisible(&selectArea);
+    addAndMakeVisible(&label);
     currentStep = steps.getFirst();
     highlight = color.RGBColor(255, 255, 255);
+    setInterceptsMouseClicks(true, true);
+    //addMouseListener(this, false);
 }
 
 void Track::paint(juce::Graphics &g)
@@ -77,9 +87,11 @@ void Track::paint(juce::Graphics &g)
 void Track::resized()
 {
     label.setBounds(0, 0, LABELWIDTH, getHeight());
+    
     int rightEdge = LABELWIDTH;
     auto totalWidth = getWidth() - LABELWIDTH;
     auto subDivWidth = totalWidth / maxSubdivision;
+    //selectArea.setBounds(LABELWIDTH, 0, totalWidth, getHeight());
    // printf("Total width: %d\n", totalWidth);
     //printf("num subdivisions: %d\n", (sequenceLength * maxSubdivision));
     for(int i = 0; i < steps.size(); ++i)
@@ -141,9 +153,72 @@ void Track::updateSteps(int numSubdivsIntoSequence)
     }
 }
 
+Step* Track::stepAtXPos(int xPos)
+{
+    
+    for(int i = 0; i < steps.size(); ++i)
+    {
+        auto thisX = steps.getUnchecked(i)->getScreenX();
+        auto nextX = thisX + steps.getUnchecked(i)->getWidth();
+        if( xPos > thisX && xPos <= nextX)
+        {
+            return steps.getUnchecked(i);
+            break;
+        }
+    }
+    return NULL;
+}
+
+void Track::clearSelection()
+{
+    if(selectedSteps.size() > 0)
+    {
+        for(int i = 0; i < selectedSteps.size(); ++i)
+        {
+            selectedSteps[i]->deselect();
+        }
+    }
+    selectedSteps.clear();
+}
+
+void Track::selectStep(Step *toSelect)
+{
+    selectedSteps.push_back(toSelect);
+    toSelect->select();
+}
+
+void Track::mouseDown(const juce::MouseEvent &m)
+{
+    clearSelection();
+    printf("track clicked\n");
+}
+
+void Track::mouseDrag(const juce::MouseEvent &m)
+{
+    if(m.mouseWasDraggedSinceMouseDown())
+    {
+        Step* selectedStep = stepAtXPos(m.getScreenX());
+        if(selectedStep != NULL)
+        {
+            selectStep(selectedStep);
+        }
+        else
+        {
+            printf("no valid step\n");
+        }
+    }
+}
+
+
+
+
+
+//==========================================================================================================================
+
 Sequence::Sequence(int length, int maxSubDivs, int temp) : maxSubdivisions(maxSubDivs), tempo(temp), sequenceLength(length)
 {
     setWantsKeyboardFocus(true);
+    setInterceptsMouseClicks(false, true);
     tracks.add(new Track(sequenceLength, maxSubDivs, kick1));
     tracks.add(new Track(sequenceLength, maxSubDivs, kick2));
     tracks.add(new Track(sequenceLength, maxSubDivs, openHat));
@@ -158,7 +233,7 @@ Sequence::Sequence(int length, int maxSubDivs, int temp) : maxSubdivisions(maxSu
     }
     maxDivIndex = 0;
     isPlaying = false;
-    auto msPerBeat = (1 / (tempo / 60.0f)) * 1000.0f;
+    auto msPerBeat = (60.0f / tempo) * 250.0f;
     auto msPerDiv = msPerBeat / maxSubdivisions;
     startTimer(msPerDiv);
 }
@@ -167,7 +242,7 @@ void Sequence::setTempo(int newTempo)
 {
     tempo = newTempo;
     stopTimer();
-    auto msPerBeat = (1 / (tempo / 60.0f)) * 1000.0f;
+    auto msPerBeat = (60.0f / tempo) * 250.0f;
     auto msPerDiv = msPerBeat / maxSubdivisions;
     startTimer(msPerDiv);
 }

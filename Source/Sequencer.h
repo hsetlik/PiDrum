@@ -64,10 +64,14 @@ public:
     {
         return maxSubdivision / factor;
     }
+    void select() {isSelected = true;}
+    void deselect() {isSelected = false;}
     void setState(stepState newState) {state = newState;}
+    bool getIsSelected() {return isSelected;}
     bool isNote;
 private:
     stepState state;
+    bool isSelected;
     int maxSubdivision; // maximum number of times a full note length can be divided
     int factor; //share of a quarter note which this step occupies
     int indexInSequence;//index of this step in the sequence (measured in units of maxSubdivision);
@@ -78,7 +82,6 @@ private:
     juce::Colour restColorOn = juce::Colours::lightblue;
 };
 
-
 const int LABELWIDTH = 80;
 
 class TrackLabelComponent : public juce::Component
@@ -86,6 +89,7 @@ class TrackLabelComponent : public juce::Component
 public:
     TrackLabelComponent(analogVoice type) : voiceType(type)
     {
+        setInterceptsMouseClicks(false, false);
         setWantsKeyboardFocus(false);
         bkgnd = color.RGBColor(70, 69, 75);
         switch(type)
@@ -173,6 +177,12 @@ public:
     void buttonClicked(juce::Button* b) override;
     void updateStepState(Step* toUpdate);
     void updateSteps(int numSubdivsIntoSequence);
+    Step* stepAtXPos(int xPos);
+    void mouseDown(const juce::MouseEvent& m) override;
+    void mouseDrag(const juce::MouseEvent& m) override;
+    void selectStep(Step* toSelect);
+    void clearSelection();
+    std::vector<Step*> selectedSteps;
     juce::OwnedArray<Step> steps;
 private:
     juce::Colour highlight;

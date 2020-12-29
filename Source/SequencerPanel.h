@@ -54,6 +54,7 @@ public:
     {
         addAndMakeVisible(seq);
         addAndMakeVisible(header);
+        setInterceptsMouseClicks(false, true);
         startTimer(50);
     }
     ~SequencerPanel() {}
