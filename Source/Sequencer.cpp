@@ -184,13 +184,14 @@ void Track::clearSelection()
 void Track::selectStep(Step *toSelect)
 {
     selectedSteps.push_back(toSelect);
+    printf("%lu steps selected\n", selectedSteps.size());
     toSelect->select();
 }
 
 void Track::mouseDown(const juce::MouseEvent &m)
 {
     clearSelection();
-    printf("track clicked\n");
+    //printf("track clicked\n");
 }
 
 void Track::mouseDrag(const juce::MouseEvent &m)
@@ -198,7 +199,7 @@ void Track::mouseDrag(const juce::MouseEvent &m)
     if(m.mouseWasDraggedSinceMouseDown())
     {
         Step* selectedStep = stepAtXPos(m.getScreenX());
-        if(selectedStep != NULL)
+        if(selectedStep->getIsSelected() == false && selectedSteps.size() < 4)
         {
             selectStep(selectedStep);
         }
