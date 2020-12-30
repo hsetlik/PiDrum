@@ -10,7 +10,7 @@
 
 #include "Sequencer.h"
 
-Step::Step(int length, int maxSub, int index) : juce::ShapeButton("stepButton", restColorOff, restColorOff, noteColorOff), isSelected(false),
+Step::Step(float length, int maxSub, int index) : juce::ShapeButton("stepButton", restColorOff, restColorOff, noteColorOff), isSelected(false),
 maxSubdivision(maxSub), factor(length), indexInSequence(index)
 {
     state = restOff;
@@ -60,6 +60,9 @@ void Step::paintButton(juce::Graphics &g, bool mouseIsOver, bool mouseIsDown)
     }
     g.drawRect(border);
 }
+
+//=========================================================================
+
 Track::Track(int length, int minimumSubDiv, analogVoice type) :  label(type), sequenceLength(length), maxSubdivision(minimumSubDiv), drumVoice(type)
 {
     for(int i = 0; i < sequenceLength; ++i)
@@ -82,6 +85,17 @@ void Track::paint(juce::Graphics &g)
     auto bounds = currentStep->getBoundsInParent();
     g.setColour(highlight);
     g.fillRect(bounds);
+    
+    for(int s = 0; s < steps.size(); ++s)
+    {
+        auto f = steps.getUnchecked(s)->getFactor();
+        if(f < 1.0f)
+        {
+            auto bounds = steps.getUnchecked(s)->getBounds();
+            g.setColour(juce::Colours::white);
+            g.fillRect(bounds);
+        }
+    }
 }
 
 void Track::resized()
@@ -203,14 +217,62 @@ void Track::mouseDrag(const juce::MouseEvent &m)
         {
             selectStep(selectedStep);
         }
-        else
-        {
-            printf("no valid step\n");
-        }
     }
 }
 
+void Track::increaseSubdivision()
+{
+  if(selectedSteps.size() > 0)
+  {
+      auto startingCount = selectedSteps.size();
+      auto numMinSubDivs = 0;
+      for(int i = 0; i < startingCount; ++i)
+      {
+          numMinSubDivs += selectedSteps[i]->getNumSubDivs();
+      }
+      auto numFullSteps = numMinSubDivs / maxSubdivision;
+      auto newStepFactor = ((startingCount + 1.0f) / numFullSteps);
+      auto rangeStartIndex = 1000;
+      for(int i = 0; i < startingCount; ++i)
+      {
+          int index = steps.indexOf(selectedSteps[i]);
+          if(index < rangeStartIndex) rangeStartIndex = index;
+          
+      }
+      for(int i = 0; i < selectedSteps.size(); ++i)
+      {
+          steps.remove(rangeStartIndex);
+      }
+      auto currentWriteIndex = rangeStartIndex + 1;
+      for(int i = 0; i < (startingCount + 1); ++i)
+      {
+          steps.insert(currentWriteIndex, new Step(newStepFactor, maxSubdivision, currentWriteIndex));
+          Step* newest = steps.getUnchecked(currentWriteIndex);
+          addAndMakeVisible(newest);
+          newest->setRestOffColor(juce::Colours::white);
+          newest->addListener(this);
+          newest->addMouseListener(this, true);
+          newest->toFront(true);
+          resized();
+          //newest->setBounds(0, 0, 50, 50);
+          if(newest->isShowing())
+          {
+              printf("tuplet showing\n");
+              printf("step x : %d\n", newest->getX());
+              printf("step y : %d\n", newest->getY());
+              printf("step width : %d\n", newest->getWidth());
+              printf("step height : %d\n", newest->getHeight());
+              newest->repaint();
+          }
+          currentWriteIndex++;
+      }
+  }
+}
 
+void Track::decreaseSubdivision()
+{
+    
+}
 
 
 
@@ -288,25 +350,46 @@ void Sequence::paint(juce::Graphics &g)
     }
 }
 
+Track* Sequence::getSelectedTrack()
+{
+    for(int i = 0; i < tracks.size(); ++i)
+    {
+        if(tracks.getUnchecked(i)->selectedSteps.size() > 0) return tracks.getUnchecked(i);
+    }
+    return NULL;
+}
+
 bool Sequence::keyPressed(const juce::KeyPress &p)
 {
     auto key = p.getTextCharacter();
     switch(key)
     {
-        case 'p':
+        case 'p': //p for play
         {
             togglePlay();
             break;
         }
-        case 'f':
+        case 'f': //f for faster
         {
             setTempo(tempo + 1);
             break;
         }
-        case 's':
+        case 's': //s for slower
         {
             setTempo(tempo - 1);
             break;
+        }
+        case 'm': //m for more
+        {
+            Track* selectedTrack = getSelectedTrack();
+            if(selectedTrack != NULL)
+            {
+                selectedTrack->increaseSubdivision();
+            }
+            else
+            {
+                printf("no valid track found\n");
+            }
         }
         default:
         {

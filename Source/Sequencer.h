@@ -33,14 +33,14 @@ enum stepState
 class Step : public juce::ShapeButton
 {
 public:
-    Step(int length, int maxSub, int index);
+    Step(float length, int maxSub, int index);
     ~Step(){}
     void paintButton(juce::Graphics& g, bool mouseIsOver, bool mouseIsDown) override;
     void setMaxSub(int newMaxSub)
     {
         maxSubdivision = newMaxSub;
     }
-    void setFactor(int value)
+    void setFactor(float value)
     {
         factor = value;
     }
@@ -54,6 +54,10 @@ public:
         {
             isNote = true;
         }
+    }
+    void setRestOffColor(juce::Colour col)
+    {
+        restColorOff = col;
     }
     int getMaxSub() {return maxSubdivision;}
     int getFactor()
@@ -73,7 +77,7 @@ private:
     stepState state;
     bool isSelected;
     int maxSubdivision; // maximum number of times a full note length can be divided
-    int factor; //share of a quarter note which this step occupies
+    float factor; //share of a quarter note which this step occupies
     int indexInSequence;//index of this step in the sequence (measured in units of maxSubdivision);
     ColorCreator color;
     juce::Colour noteColorOff = juce::Colours::lightblue;
@@ -171,12 +175,13 @@ class Track : public juce::Component, juce::Button::Listener
 public:
     Track(int length, int minimumSubdiv, analogVoice type);
     ~Track() {}
-    void createTuplet(Step* stepToDivide, int numMinimumDivisions) {}
     void resized() override;
     void paint(juce::Graphics& g) override;
     void buttonClicked(juce::Button* b) override;
     void updateStepState(Step* toUpdate);
     void updateSteps(int numSubdivsIntoSequence);
+    void increaseSubdivision();
+    void decreaseSubdivision();
     Step* stepAtXPos(int xPos);
     void mouseDown(const juce::MouseEvent& m) override;
     void mouseDrag(const juce::MouseEvent& m) override;
@@ -214,6 +219,7 @@ public:
     {
         return tempo;
     }
+    Track* getSelectedTrack();
 private:
     ColorCreator color;
     int maxDivIndex;
