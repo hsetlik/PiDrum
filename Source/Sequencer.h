@@ -64,10 +64,15 @@ public:
     {
         return factor;
     }
+    int lengthInSubDivs()
+    {
+        return(factor * maxSubdivision);
+    }
     int getNumSubDivs()
     {
         return maxSubdivision / factor;
     }
+    int getIndex() {return indexInSequence;}
     void select() {isSelected = true;}
     void deselect() {isSelected = false;}
     void setState(stepState newState) {state = newState;}

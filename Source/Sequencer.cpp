@@ -224,52 +224,47 @@ void Track::increaseSubdivision()
 {
   if(selectedSteps.size() > 0)
   {
-      auto startingCount = selectedSteps.size();
-      auto numMinSubDivs = 0;
-      for(int i = 0; i < startingCount; ++i)
+      auto numNotesStart = selectedSteps.size();
+      auto totalSubDivs = 0;
+      auto firstNoteIndex = 1000;
+      for(int note = 0; note < numNotesStart; ++note)
       {
-          numMinSubDivs += selectedSteps[i]->getNumSubDivs();
-      }
-      auto numFullSteps = numMinSubDivs / maxSubdivision;
-      auto newStepFactor = ((startingCount + 1.0f) / numFullSteps);
-      auto rangeStartIndex = 1000;
-      for(int i = 0; i < startingCount; ++i)
-      {
-          int index = steps.indexOf(selectedSteps[i]);
-          if(index < 1) index = 1;
-          if(index < rangeStartIndex) rangeStartIndex = index;
-          
-      }
-      for(int i = 0; i < selectedSteps.size(); ++i)
-      {
-          steps.remove(rangeStartIndex);
-      }
-      auto currentWriteIndex = rangeStartIndex;
-      for(int i = 0; i < (startingCount + 1); ++i)
-      {
-          steps.insert(currentWriteIndex, new Step(newStepFactor, maxSubdivision, currentWriteIndex));
-          Step* newest = steps.getUnchecked(currentWriteIndex);
-          addAndMakeVisible(newest);
-          newest->addListener(this);
-          newest->addMouseListener(this, true);
-          resized();
-          //newest->setBounds(0, 0, 50, 50);
-          if(newest->isShowing())
+          totalSubDivs += selectedSteps[note]->getNumSubDivs();
+          auto index = selectedSteps[note]->getIndex();
+          printf("start index is: %d\n", index);
+          if(index < firstNoteIndex) {firstNoteIndex = index;}
+          if(index < 0 )
           {
-              printf("tuplet showing\n");
-              printf("step x : %d\n", newest->getX());
-              printf("step y : %d\n", newest->getY());
-              printf("step width : %d\n", newest->getWidth());
-              printf("step height : %d\n", newest->getHeight());
-              newest->repaint();
+              printf("negative index\n");
           }
-          currentWriteIndex++;
+      }
+      if(firstNoteIndex >= 0)
+      {
+          for(int i = 0; i < numNotesStart; ++i)
+          {
+              auto index = steps.indexOf(selectedSteps[i]);
+              steps.remove(index);
+          }
+          auto numNotesEnd = numNotesStart + 1;
+          auto newNoteSubDivs = totalSubDivs / numNotesEnd;
+          auto newNoteFactor = newNoteSubDivs / maxSubdivision;
+          for(int i = 0; i < numNotesEnd; ++i)
+          {
+              auto writeIndex = firstNoteIndex + i;
+              steps.insert(writeIndex, new Step(newNoteFactor, maxSubdivision, writeIndex));
+              Step* lastStep = steps.getUnchecked(writeIndex);
+              addAndMakeVisible(lastStep);
+              lastStep->addListener(this);
+              lastStep->addMouseListener(this, true);
+          }
+          resized();
       }
   }
 }
 
 void Track::decreaseSubdivision()
 {
+    /*
     if(selectedSteps.size() > 1)
     {
         auto startingCount = selectedSteps.size();
@@ -312,8 +307,8 @@ void Track::decreaseSubdivision()
             }
             currentWriteIndex++;
         }
-    }
-    
+
+    }*/
 }
 
 
