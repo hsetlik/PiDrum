@@ -231,7 +231,7 @@ void Track::increaseSubdivision()
           numMinSubDivs += selectedSteps[i]->getNumSubDivs();
       }
       auto numFullSteps = numMinSubDivs / maxSubdivision;
-      auto newStepFactor = ((startingCount + 1.0f) / numFullSteps);
+      auto newStepFactor = (numFullSteps / (startingCount + 1));
       auto rangeStartIndex = 1000;
       for(int i = 0; i < startingCount; ++i)
       {
