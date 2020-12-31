@@ -236,6 +236,7 @@ void Track::increaseSubdivision()
       for(int i = 0; i < startingCount; ++i)
       {
           int index = steps.indexOf(selectedSteps[i]);
+          if(index < 1) index = 1;
           if(index < rangeStartIndex) rangeStartIndex = index;
           
       }
@@ -243,16 +244,14 @@ void Track::increaseSubdivision()
       {
           steps.remove(rangeStartIndex);
       }
-      auto currentWriteIndex = rangeStartIndex + 1;
+      auto currentWriteIndex = rangeStartIndex;
       for(int i = 0; i < (startingCount + 1); ++i)
       {
           steps.insert(currentWriteIndex, new Step(newStepFactor, maxSubdivision, currentWriteIndex));
           Step* newest = steps.getUnchecked(currentWriteIndex);
           addAndMakeVisible(newest);
-          newest->setRestOffColor(juce::Colours::white);
           newest->addListener(this);
           newest->addMouseListener(this, true);
-          newest->toFront(true);
           resized();
           //newest->setBounds(0, 0, 50, 50);
           if(newest->isShowing())
@@ -271,6 +270,49 @@ void Track::increaseSubdivision()
 
 void Track::decreaseSubdivision()
 {
+    if(selectedSteps.size() > 1)
+    {
+        auto startingCount = selectedSteps.size();
+        auto numMinSubDivs = 0;
+        for(int i = 0; i < startingCount; ++i)
+        {
+            numMinSubDivs += selectedSteps[i]->getNumSubDivs();
+        }
+        auto numFullSteps = numMinSubDivs / maxSubdivision;
+        auto newStepFactor = ((startingCount - 1.0f) / numFullSteps);
+        auto rangeStartIndex = 1000;
+        for(int i = 0; i < startingCount; ++i)
+        {
+            int index = steps.indexOf(selectedSteps[i]);
+            if(index < rangeStartIndex) rangeStartIndex = index;
+            
+        }
+        for(int i = 0; i < selectedSteps.size(); ++i)
+        {
+            steps.remove(rangeStartIndex);
+        }
+        auto currentWriteIndex = rangeStartIndex + 1;
+        for(int i = 0; i < (startingCount - 1); ++i)
+        {
+            steps.insert((currentWriteIndex), new Step(newStepFactor, maxSubdivision, currentWriteIndex));
+            Step* newest = steps.getUnchecked(currentWriteIndex);
+            addAndMakeVisible(newest);
+            newest->addListener(this);
+            newest->addMouseListener(this, true);
+            resized();
+            //newest->setBounds(0, 0, 50, 50);
+            if(newest->isShowing())
+            {
+                printf("tuplet showing\n");
+                printf("step x : %d\n", newest->getX());
+                printf("step y : %d\n", newest->getY());
+                printf("step width : %d\n", newest->getWidth());
+                printf("step height : %d\n", newest->getHeight());
+                newest->repaint();
+            }
+            currentWriteIndex++;
+        }
+    }
     
 }
 
@@ -385,6 +427,18 @@ bool Sequence::keyPressed(const juce::KeyPress &p)
             if(selectedTrack != NULL)
             {
                 selectedTrack->increaseSubdivision();
+            }
+            else
+            {
+                printf("no valid track found\n");
+            }
+        }
+        case 'l':
+        {
+            Track* selectedTrack = getSelectedTrack();
+            if(selectedTrack != NULL)
+            {
+                selectedTrack->decreaseSubdivision();
             }
             else
             {
