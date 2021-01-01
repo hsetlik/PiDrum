@@ -49,7 +49,7 @@ void Step::paintButton(juce::Graphics &g, bool mouseIsOver, bool mouseIsDown)
         }
     }
     g.fillRect(getLocalBounds());
-    auto border = getLocalBounds();
+    auto border = getLocalBounds().expanded(1);
     if(isSelected)
     {
         g.setColour(juce::Colours::white);
@@ -58,7 +58,7 @@ void Step::paintButton(juce::Graphics &g, bool mouseIsOver, bool mouseIsDown)
     {
         g.setColour(juce::Colours::black);
     }
-    g.drawRect(border);
+    g.drawRect(border, 2);
 }
 
 //=========================================================================
@@ -85,34 +85,27 @@ void Track::paint(juce::Graphics &g)
     auto bounds = currentStep->getBoundsInParent();
     g.setColour(highlight);
     g.fillRect(bounds);
-    
-    for(int s = 0; s < steps.size(); ++s)
-    {
-        auto f = steps.getUnchecked(s)->getFactor();
-        if(f < 1.0f)
-        {
-            auto bounds = steps.getUnchecked(s)->getBounds();
-            g.setColour(juce::Colours::white);
-            g.fillRect(bounds);
-        }
-    }
 }
 
 void Track::resized()
 {
     label.setBounds(0, 0, LABELWIDTH, getHeight());
     
-    int rightEdge = LABELWIDTH;
-    auto totalWidth = getWidth() - LABELWIDTH;
-    auto subDivWidth = totalWidth / maxSubdivision;
+    auto rightEdge = (float)LABELWIDTH + 0.0f;
+    auto totalWidth = (float)getWidth() - rightEdge;
+    auto subDivWidth = (float)(totalWidth / sequenceLength) / (double)maxSubdivision;
     //selectArea.setBounds(LABELWIDTH, 0, totalWidth, getHeight());
    // printf("Total width: %d\n", totalWidth);
     //printf("num subdivisions: %d\n", (sequenceLength * maxSubdivision));
     for(int i = 0; i < steps.size(); ++i)
     {
-        auto width = (steps.getUnchecked(i)->getNumSubDivs()) * (float)(subDivWidth / (float)sequenceLength);
-        //printf("SubDivWidth: %d\n", subDivWidth);
-        steps.getUnchecked(i)->setBounds(rightEdge, 0.0f, width, getHeight());
+        auto width = ceil(steps.getUnchecked(i)->getNumSubDivs()) * (subDivWidth);
+        steps.getUnchecked(i)->setBounds(rightEdge, 0.0f, width, (float)getHeight());
+        if(steps.getUnchecked(i)->getFactor() < 1.0f)
+        {
+            printf("SudDivWidth is: %f\n", subDivWidth);
+            printf("Step has factor: %f and width: %d\n", steps.getUnchecked(i)->getFactor(), steps.getUnchecked(i)->getWidth());
+        }
         rightEdge += width;
     }
 }
@@ -198,7 +191,6 @@ void Track::clearSelection()
 void Track::selectStep(Step *toSelect)
 {
     selectedSteps.push_back(toSelect);
-    printf("%lu steps selected\n", selectedSteps.size());
     toSelect->select();
 }
 
@@ -213,7 +205,7 @@ void Track::mouseDrag(const juce::MouseEvent &m)
     if(m.mouseWasDraggedSinceMouseDown())
     {
         Step* selectedStep = stepAtXPos(m.getScreenX());
-        if(selectedStep->getIsSelected() == false && selectedSteps.size() < 4)
+        if(selectedStep->getIsSelected() == false && selectedSteps.size() < 5)
         {
             selectStep(selectedStep);
         }
@@ -225,6 +217,7 @@ void Track::increaseSubdivision()
   if(selectedSteps.size() > 0)
   {
       auto numNotesStart = selectedSteps.size();
+      steps.ensureStorageAllocated(steps.size() + 1);
       auto totalSubDivs = 0;
       auto firstNoteIndex = 1000;
       for(int note = 0; note < numNotesStart; ++note)
@@ -247,17 +240,20 @@ void Track::increaseSubdivision()
           }
           auto numNotesEnd = numNotesStart + 1;
           auto newNoteSubDivs = totalSubDivs / numNotesEnd;
-          auto newNoteFactor = newNoteSubDivs / maxSubdivision;
+          auto newNoteFactor = ceil(newNoteSubDivs) / maxSubdivision;
           for(int i = 0; i < numNotesEnd; ++i)
           {
               auto writeIndex = firstNoteIndex + i;
               steps.insert(writeIndex, new Step(newNoteFactor, maxSubdivision, writeIndex));
               Step* lastStep = steps.getUnchecked(writeIndex);
               addAndMakeVisible(lastStep);
+              resized();
               lastStep->addListener(this);
+              printf("Step %d is at: %d, %d\n", i, lastStep->getX(), lastStep->getY());
+              printf("Step %d length: %d\n", i, lastStep->lengthInSubDivs());
               lastStep->addMouseListener(this, true);
           }
-          resized();
+          
       }
   }
 }
