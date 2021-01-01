@@ -231,6 +231,8 @@ void Track::increaseSubdivision()
               printf("negative index\n");
           }
       }
+      //inserting the new steps
+      std::vector<Step*> newSteps;
       if(firstNoteIndex >= 0)
       {
           for(int i = 0; i < numNotesStart; ++i)
@@ -241,11 +243,13 @@ void Track::increaseSubdivision()
           auto numNotesEnd = numNotesStart + 1;
           auto newNoteSubDivs = totalSubDivs / numNotesEnd;
           auto newNoteFactor = ceil(newNoteSubDivs) / maxSubdivision;
+          
           for(int i = 0; i < numNotesEnd; ++i)
           {
               auto writeIndex = firstNoteIndex + i;
               steps.insert(writeIndex, new Step(newNoteFactor, maxSubdivision, writeIndex));
               Step* lastStep = steps.getUnchecked(writeIndex);
+              newSteps.push_back(lastStep);
               addAndMakeVisible(lastStep);
               resized();
               lastStep->addListener(this);
@@ -254,6 +258,17 @@ void Track::increaseSubdivision()
               lastStep->addMouseListener(this, true);
           }
           
+      }
+      //handling selection
+      clearSelection();
+      int numToSelect = 5;
+      if(newSteps.size() < 5)
+      {
+          numToSelect = newSteps.size();
+      }
+      for(int i = 0; i < numToSelect; ++i)
+      {
+          selectStep(newSteps[i]);
       }
   }
 }
