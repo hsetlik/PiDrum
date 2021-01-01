@@ -30,6 +30,8 @@ enum stepState
     noteOn
 };
 
+const int LABELWIDTH = 80;
+
 class Step : public juce::ShapeButton
 {
 public:
@@ -60,14 +62,19 @@ public:
         restColorOff = col;
     }
     int getMaxSub() {return maxSubdivision;}
-    int getFactor()
+    float getFactor()
     {
         return factor;
     }
+    int lengthInSubDivs()
+    {
+        return(factor * maxSubdivision);
+    }
     int getNumSubDivs()
     {
-        return maxSubdivision / factor;
+        return maxSubdivision * factor;
     }
+    int getIndex() {return indexInSequence;}
     void select() {isSelected = true;}
     void deselect() {isSelected = false;}
     void setState(stepState newState) {state = newState;}
@@ -86,7 +93,7 @@ private:
     juce::Colour restColorOn = juce::Colours::lightblue;
 };
 
-const int LABELWIDTH = 80;
+
 
 class TrackLabelComponent : public juce::Component
 {
