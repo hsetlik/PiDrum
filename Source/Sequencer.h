@@ -75,6 +75,8 @@ public:
         return maxSubdivision * factor;
     }
     int getIndex() {return indexInSequence;}
+    void setIndex(int index) {indexInSequence = index;}
+    void incrementIndex() {indexInSequence += 1;}
     void select() {isSelected = true;}
     void deselect() {isSelected = false;}
     void setState(stepState newState) {state = newState;}
@@ -85,7 +87,7 @@ private:
     bool isSelected;
     int maxSubdivision; // maximum number of times a full note length can be divided
     float factor; //share of a quarter note which this step occupies
-    int indexInSequence;//index of this step in the sequence (measured in units of maxSubdivision);
+    int indexInSequence;
     ColorCreator color;
     juce::Colour noteColorOff = juce::Colours::lightblue;
     juce::Colour noteColorOn = juce::Colours::lightblue;

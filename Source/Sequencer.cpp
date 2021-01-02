@@ -216,7 +216,7 @@ void Track::increaseSubdivision()
 {
   if(selectedSteps.size() > 0)
   {
-      auto numNotesStart = selectedSteps.size();
+      auto numNotesStart = (int)selectedSteps.size();
       steps.ensureStorageAllocated(steps.size() + 1);
       auto totalSubDivs = 0;
       auto firstNoteIndex = 1000;
@@ -251,34 +251,41 @@ void Track::increaseSubdivision()
               Step* lastStep = steps.getUnchecked(writeIndex);
               newSteps.push_back(lastStep);
               addAndMakeVisible(lastStep);
-              resized();
               lastStep->addListener(this);
               printf("Step %d is at: %d, %d\n", i, lastStep->getX(), lastStep->getY());
               printf("Step %d length: %d\n", i, lastStep->lengthInSubDivs());
               lastStep->addMouseListener(this, true);
           }
-          
+          resized();
+      }
+      int lastTupletIndex = firstNoteIndex + numNotesStart + 1;
+      for(int i = 0; i < sequenceLength - lastTupletIndex; ++i)
+      {
+          steps.getUnchecked(lastTupletIndex + i)->incrementIndex();
       }
       //handling selection
       clearSelection();
       int numToSelect = 5;
       if(newSteps.size() < 5)
       {
-          numToSelect = newSteps.size();
+          numToSelect = (int)newSteps.size();
       }
       for(int i = 0; i < numToSelect; ++i)
       {
           selectStep(newSteps[i]);
       }
   }
+    
+    printf("current step number: %d\n", steps.size());
 }
 
 void Track::decreaseSubdivision()
 {
+    
     if(selectedSteps.size() > 2)
     {
         auto numNotesStart = selectedSteps.size();
-        steps.ensureStorageAllocated(steps.size() - 1);
+        //steps.ensureStorageAllocated(steps.size() - 1);
         auto totalSubDivs = 0;
         auto firstNoteIndex = 1000;
         for(int note = 0; note < numNotesStart; ++note)
@@ -325,14 +332,13 @@ void Track::decreaseSubdivision()
         int numToSelect = 5;
         if(newSteps.size() < 5)
         {
-            numToSelect = newSteps.size();
+            numToSelect = (int)newSteps.size();
         }
         for(int i = 0; i < numToSelect; ++i)
         {
             selectStep(newSteps[i]);
         }
     }
-    
 }
 
 
@@ -451,6 +457,7 @@ bool Sequence::keyPressed(const juce::KeyPress &p)
             {
                 printf("no valid track found\n");
             }
+            break;
         }
         case 'l':
         {
@@ -463,6 +470,7 @@ bool Sequence::keyPressed(const juce::KeyPress &p)
             {
                 printf("no valid track found\n");
             }
+            break;
         }
         default:
         {
