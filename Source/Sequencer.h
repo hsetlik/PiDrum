@@ -77,6 +77,7 @@ public:
     int getIndex() {return indexInSequence;}
     void setIndex(int index) {indexInSequence = index;}
     void incrementIndex() {indexInSequence += 1;}
+    void decrementIndex() {indexInSequence -= 1;}
     void select() {isSelected = true;}
     void deselect() {isSelected = false;}
     void setState(stepState newState) {state = newState;}
@@ -224,6 +225,7 @@ public:
     void resized() override;
     void paint(juce::Graphics& g) override;
     bool keyPressed(const juce::KeyPress &p) override;
+    void mouseDown(const juce::MouseEvent& m) override;
     int getTempo()
     {
         return tempo;

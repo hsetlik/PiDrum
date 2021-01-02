@@ -284,7 +284,7 @@ void Track::decreaseSubdivision()
     
     if(selectedSteps.size() > 2)
     {
-        auto numNotesStart = selectedSteps.size();
+        auto numNotesStart = (int)selectedSteps.size();
         //steps.ensureStorageAllocated(steps.size() - 1);
         auto totalSubDivs = 0;
         auto firstNoteIndex = 1000;
@@ -338,6 +338,7 @@ void Track::decreaseSubdivision()
         {
             selectStep(newSteps[i]);
         }
+        
     }
 }
 
@@ -348,7 +349,8 @@ void Track::decreaseSubdivision()
 Sequence::Sequence(int length, int maxSubDivs, int temp) : maxSubdivisions(maxSubDivs), tempo(temp), sequenceLength(length)
 {
     setWantsKeyboardFocus(true);
-    setInterceptsMouseClicks(false, true);
+    addMouseListener(this, true);
+    //setInterceptsMouseClicks(false, true);
     tracks.add(new Track(sequenceLength, maxSubDivs, kick1));
     tracks.add(new Track(sequenceLength, maxSubDivs, kick2));
     tracks.add(new Track(sequenceLength, maxSubDivs, openHat));
@@ -406,6 +408,14 @@ void Sequence::resized()
     for(int i = 0; i < tracks.size(); ++i)
     {
         tracks.getUnchecked(i)->setBounds(0, trackHeight * i, getWidth(), trackHeight);
+    }
+}
+
+void Sequence::mouseDown(const juce::MouseEvent &m)
+{
+    for(int i = 0; i < tracks.size(); ++i)
+    {
+        tracks.getUnchecked(i)->clearSelection();
     }
 }
 
