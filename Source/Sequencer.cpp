@@ -275,51 +275,64 @@ void Track::increaseSubdivision()
 
 void Track::decreaseSubdivision()
 {
-    /*
-    if(selectedSteps.size() > 1)
+    if(selectedSteps.size() > 2)
     {
-        auto startingCount = selectedSteps.size();
-        auto numMinSubDivs = 0;
-        for(int i = 0; i < startingCount; ++i)
+        auto numNotesStart = selectedSteps.size();
+        steps.ensureStorageAllocated(steps.size() - 1);
+        auto totalSubDivs = 0;
+        auto firstNoteIndex = 1000;
+        for(int note = 0; note < numNotesStart; ++note)
         {
-            numMinSubDivs += selectedSteps[i]->getNumSubDivs();
+            totalSubDivs += selectedSteps[note]->getNumSubDivs();
+            auto index = selectedSteps[note]->getIndex();
+            printf("start index is: %d\n", index);
+            if(index < firstNoteIndex) {firstNoteIndex = index;}
+            if(index < 0 )
+            {
+                printf("negative index\n");
+            }
         }
-        auto numFullSteps = numMinSubDivs / maxSubdivision;
-        auto newStepFactor = ((startingCount - 1.0f) / numFullSteps);
-        auto rangeStartIndex = 1000;
-        for(int i = 0; i < startingCount; ++i)
+        //inserting the new steps
+        std::vector<Step*> newSteps;
+        if(firstNoteIndex >= 0)
         {
-            int index = steps.indexOf(selectedSteps[i]);
-            if(index < rangeStartIndex) rangeStartIndex = index;
+            for(int i = 0; i < numNotesStart; ++i)
+            {
+                auto index = steps.indexOf(selectedSteps[i]);
+                steps.remove(index);
+            }
+            auto numNotesEnd = numNotesStart - 1;
+            auto newNoteSubDivs = totalSubDivs / numNotesEnd;
+            auto newNoteFactor = ceil(newNoteSubDivs) / maxSubdivision;
+            
+            for(int i = 0; i < numNotesEnd; ++i)
+            {
+                auto writeIndex = firstNoteIndex + i;
+                steps.insert(writeIndex, new Step(newNoteFactor, maxSubdivision, writeIndex));
+                Step* lastStep = steps.getUnchecked(writeIndex);
+                newSteps.push_back(lastStep);
+                addAndMakeVisible(lastStep);
+                resized();
+                lastStep->addListener(this);
+                printf("Step %d is at: %d, %d\n", i, lastStep->getX(), lastStep->getY());
+                printf("Step %d length: %d\n", i, lastStep->lengthInSubDivs());
+                lastStep->addMouseListener(this, true);
+            }
             
         }
-        for(int i = 0; i < selectedSteps.size(); ++i)
+        //handling selection
+        clearSelection();
+        int numToSelect = 5;
+        if(newSteps.size() < 5)
         {
-            steps.remove(rangeStartIndex);
+            numToSelect = newSteps.size();
         }
-        auto currentWriteIndex = rangeStartIndex + 1;
-        for(int i = 0; i < (startingCount - 1); ++i)
+        for(int i = 0; i < numToSelect; ++i)
         {
-            steps.insert((currentWriteIndex), new Step(newStepFactor, maxSubdivision, currentWriteIndex));
-            Step* newest = steps.getUnchecked(currentWriteIndex);
-            addAndMakeVisible(newest);
-            newest->addListener(this);
-            newest->addMouseListener(this, true);
-            resized();
-            //newest->setBounds(0, 0, 50, 50);
-            if(newest->isShowing())
-            {
-                printf("tuplet showing\n");
-                printf("step x : %d\n", newest->getX());
-                printf("step y : %d\n", newest->getY());
-                printf("step width : %d\n", newest->getWidth());
-                printf("step height : %d\n", newest->getHeight());
-                newest->repaint();
-            }
-            currentWriteIndex++;
+            selectStep(newSteps[i]);
         }
-
-    }*/
+    }
+    
 }
 
 
