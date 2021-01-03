@@ -83,9 +83,11 @@ Track::Track(int length, int minimumSubDiv, analogVoice type) :  label(type), se
 
 void Track::paint(juce::Graphics &g)
 {
+    /*
     auto bounds = currentStep->getBoundsInParent();
     g.setColour(highlight);
     g.fillRect(bounds);
+     */
 }
 
 void Track::resized()
@@ -102,11 +104,6 @@ void Track::resized()
     {
         auto width = ceil(steps.getUnchecked(i)->getNumSubDivs()) * (subDivWidth);
         steps.getUnchecked(i)->setBounds(rightEdge, 0.0f, width, (float)getHeight());
-        if(steps.getUnchecked(i)->getFactor() < 1.0f)
-        {
-            printf("SudDivWidth is: %f\n", subDivWidth);
-            printf("Step has factor: %f and width: %d\n", steps.getUnchecked(i)->getFactor(), steps.getUnchecked(i)->getWidth());
-        }
         rightEdge += width;
     }
 }

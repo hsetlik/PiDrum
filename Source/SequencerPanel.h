@@ -55,7 +55,7 @@ public:
         addAndMakeVisible(seq);
         addAndMakeVisible(header);
         setInterceptsMouseClicks(false, true);
-        startTimer(50);
+        startTimerHz(20);
     }
     ~SequencerPanel() {}
     void resized() override
@@ -66,7 +66,7 @@ public:
     void timerCallback() override
     {
         seq.repaint();
-        header.repaint();
+        //header.repaint();
     }
 private:
     Sequence seq;
