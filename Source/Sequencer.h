@@ -197,8 +197,10 @@ public:
     void mouseDrag(const juce::MouseEvent& m) override;
     void selectStep(Step* toSelect);
     void clearSelection();
+    juce::MidiMessage getMidiMessage();
     std::vector<Step*> selectedSteps;
     juce::OwnedArray<Step> steps;
+    bool hasCurrentNote;
 private:
     juce::Colour highlight;
     ColorCreator color;
@@ -232,6 +234,7 @@ public:
     }
     Track* getSelectedTrack();
 private:
+    std::unique_ptr<juce::MidiOutput> midiOut;
     ColorCreator color;
     int maxDivIndex;
     int maxSubdivisions;

@@ -65,6 +65,7 @@ void Step::paintButton(juce::Graphics &g, bool mouseIsOver, bool mouseIsDown)
 
 Track::Track(int length, int minimumSubDiv, analogVoice type) :  label(type), sequenceLength(length), maxSubdivision(minimumSubDiv), drumVoice(type)
 {
+    hasCurrentNote = false;
     for(int i = 0; i < sequenceLength; ++i)
     {
         steps.add(new Step(1, maxSubdivision, i));
@@ -143,6 +144,46 @@ void Track::updateStepState(Step *toUpdate)
     }
 }
 
+juce::MidiMessage Track::getMidiMessage()
+{
+    auto channel = 1;
+    auto velocity = 1.0f;
+    int noteNumber;
+    switch(drumVoice)
+    {
+        case kick1:
+        {
+            noteNumber = 36;
+            break;
+        }
+        case kick2: {
+            noteNumber = 35;
+            break;
+        }
+        case openHat: {
+            noteNumber = 46;
+            break;
+        }
+        case closedHat: {
+            noteNumber = 42;
+            break;
+        }
+        case snare: {
+            noteNumber = 40;
+            break;
+        }
+        case clap: {
+            noteNumber = 39;
+            break;
+        }
+        case clave: {
+            noteNumber = 37;
+            break;
+        }
+    }
+    return juce::MidiMessage::noteOn(channel, noteNumber, velocity);
+}
+
 void Track::updateSteps(int numSubdivsIntoSequence)
 {
     int pos = numSubdivsIntoSequence;
@@ -153,6 +194,12 @@ void Track::updateSteps(int numSubdivsIntoSequence)
         int noteEnd = index + checkStep->getNumSubDivs();
         if(index <= pos && pos < noteEnd)
         {
+            if(currentStep != checkStep && checkStep->isNote)
+            {
+                hasCurrentNote = true;
+            } else {
+                hasCurrentNote = false;
+            }
             currentStep = checkStep;
         }
         index = noteEnd;
@@ -350,6 +397,16 @@ Sequence::Sequence(int length, int maxSubDivs, int temp) : maxSubdivisions(maxSu
 {
     setWantsKeyboardFocus(true);
     addMouseListener(this, true);
+    
+    juce::Array<juce::MidiDeviceInfo> allDevices = juce::MidiOutput::getAvailableDevices();
+    auto midiId = allDevices[0].identifier;
+    printf("Device identifier: %s\n", midiId.toUTF8());
+    midiOut = juce::MidiOutput::openDevice(midiId);
+    if(midiOut != NULL)
+        {
+            printf("Teensy Midi Found\n");
+            
+        }
     //setInterceptsMouseClicks(false, true);
     tracks.add(new Track(sequenceLength, maxSubDivs, kick1));
     tracks.add(new Track(sequenceLength, maxSubDivs, kick2));
@@ -387,6 +444,10 @@ void Sequence::hiResTimerCallback()
     for(int i = 0; i < tracks.size(); ++i)
     {
         tracks.getUnchecked(i)->updateSteps(maxDivIndex);
+        if(tracks.getUnchecked(i)->hasCurrentNote && midiOut != NULL)
+        {
+            midiOut->sendMessageNow(tracks.getUnchecked(i)->getMidiMessage());
+        }
     }
 }
 
